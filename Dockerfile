@@ -1,0 +1,93 @@
+# Copyright (c) 2021 Open Technologies for Integration
+# Licensed under the MIT license (see LICENSE for details)
+
+#########################################################################
+#
+# This IBM Cloud Functions ACE image is built on top of the python 3.7
+# image for convenience; a "proper" image would not need python and would
+# be significantly smaller!
+#
+#########################################################################
+FROM ibmfunctions/action-python-v3.7
+
+#
+# Instructions for buiding and creating the cloud function:
+# 
+# docker build -t tdolby/experimental:ace-cloud-function -f Dockerfile .
+# docker push tdolby/experimental:ace-cloud-function
+# cd app
+# ibmcloud target -o tdolby@uk.ibm.com -s dev
+# ibmcloud fn action create --web yes get-http-resource/ace-cloud-function --docker tdolby/experimental:ace-cloud-function python-code.py
+#
+
+MAINTAINER Trevor Dolby <tdolby@uk.ibm.com> (@tdolby)
+ARG DOWNLOAD_URL=http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/integration/11.0.0.12-ACE-LINUX64-DEVELOPER.tar.gz
+ARG PRODUCT_LABEL=ace-11.0.0.12
+
+#########################################################################
+#
+# Add ACE into the image, excluding as much as possible to keep the image
+# from being enormous.
+#
+#########################################################################
+
+# Prevent errors about having no terminal when using apt-get
+ENV DEBIAN_FRONTEND noninteractive
+
+# Set up exclusions
+COPY exclude-files/excludes*txt /tmp/
+
+RUN cat /tmp/excludes-base.txt >> /tmp/all-excludes.txt && \
+# Adapters are optional
+    cat /tmp/excludes-adapters.txt >> /tmp/all-excludes.txt && \
+# CICS is optional
+    cat /tmp/excludes-cics.txt >> /tmp/all-excludes.txt && \
+# FTE is optional
+    cat /tmp/excludes-fte.txt >> /tmp/all-excludes.txt && \
+# GlobalCache is optional; set MQSI_NO_CACHE_SUPPORT=1
+    cat /tmp/excludes-globalcache.txt >> /tmp/all-excludes.txt && \
+# IMS is optional
+    cat /tmp/excludes-ims.txt >> /tmp/all-excludes.txt && \
+# node.js support is optional; use --no-nodejs on server start line
+    cat /tmp/excludes-nodejs.txt >> /tmp/all-excludes.txt && \
+# NPM install support is optional
+    cat /tmp/excludes-npm.txt >> /tmp/all-excludes.txt && \
+# ODBC drivers are optional
+    cat /tmp/excludes-odbc.txt >> /tmp/all-excludes.txt && \
+# Toolkit is optional
+    cat /tmp/excludes-tools.txt >> /tmp/all-excludes.txt && \
+# Web UI support optional; use --admin-rest-api -1 on server start line
+    cat /tmp/excludes-webui.txt >> /tmp/all-excludes.txt && \
+# WSRR nodes are optional
+    cat /tmp/excludes-wsrr.txt >> /tmp/all-excludes.txt && \
+# XSLT nodes are optional
+    cat /tmp/excludes-xmlt.txt >> /tmp/all-excludes.txt
+
+# Install ACE and accept the license
+RUN apt-get update && apt-get install -y zip binutils curl && \
+    mkdir /opt/ibm && \
+    echo Downloading package ${DOWNLOAD_URL} && \
+    curl ${DOWNLOAD_URL} \
+    | tar zx --exclude-from=/tmp/all-excludes.txt --directory /opt/ibm && \
+    mv /opt/ibm/${PRODUCT_LABEL} /opt/ibm/ace-11 && \
+    find /opt/ibm -name "*.so*" -exec strip {} ";" && \
+    find /opt/ibm -name "*.wrk" -exec strip {} ";" && \
+    find /opt/ibm -name "*.lil" -exec strip {} ";" && \
+    ( strip /opt/ibm/ace-11/server/bin/* 2>/dev/null || /bin/true ) && \
+    zip -d /opt/ibm/ace-11/common/classes/IntegrationAPI.jar BIPmsgs_de.properties BIPmsgs_es.properties BIPmsgs_fr.properties BIPmsgs_it.properties BIPmsgs_ja.properties BIPmsgs_ko.properties BIPmsgs_pl.properties BIPmsgs_pt_BR.properties BIPmsgs_ru.properties BIPmsgs_tr.properties BIPmsgs_zh.properties BIPmsgs_zh_HK.properties BIPmsgs_zh_TW.properties && \
+    apt-get remove -y zip binutils curl && \
+    apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && \
+    /opt/ibm/ace-11/ace make registry global accept license silently
+
+COPY aceFunction.bar /tmp/aceFunction.bar
+
+# Create a user to run as, create the ace workdir, deploy the BAR file, and chmod script files
+RUN useradd --create-home --home-dir /home/aceuser --shell /bin/bash -G mqbrkrs,sudo aceuser \
+  && su - aceuser -c "export LICENSE=accept && . /opt/ibm/ace-11/server/bin/mqsiprofile && mqsicreateworkdir /home/aceuser/ace-server &&  mqsibar -c -a /tmp/aceFunction.bar -w /home/aceuser/ace-server" \
+  && echo ". /opt/ibm/ace-11/server/bin/mqsiprofile" >> /home/aceuser/.bashrc
+
+COPY run-server.sh /home/aceuser/run-server.sh
+RUN chmod -R 777 /home/aceuser
+
+# Switch off the admin REST API for the server run, as we won't be deploying anything after start
+RUN sed -i 's/#port: 7600/port: -1/g' /home/aceuser/ace-server/server.conf.yaml 
