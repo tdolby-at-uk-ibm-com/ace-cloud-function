@@ -1,5 +1,5 @@
+#!/usr/bin/env python
 import sys
-import requests
 import os
 import subprocess
 import json
