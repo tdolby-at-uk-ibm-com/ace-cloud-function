@@ -3,12 +3,13 @@
 
 #########################################################################
 #
-# This IBM Cloud Functions ACE image is built on top of the python 3.7
-# image for convenience; a "proper" image would not need python and would
-# be significantly smaller!
+# This IBM Cloud Functions ACE image is built on top of the ACE minimal
+# image to keep the size below the 512MB limit in the free IBM Cloud
+# container registry.
 #
 #########################################################################
-FROM tdolby/experimental:ace-minimal-12.0.1.0-alpine
+#FROM tdolby/experimental:ace-minimal-12.0.1.0-alpine
+FROM us.icr.io/ace-registry/ace-minimal:12.0.1.0-alpine
 
 #
 # Instructions for buiding and creating the cloud function:
