@@ -1,0 +1,18 @@
+POST / HTTP/1.1
+x-request-id: 41b66c01b3466a09d8197851c8abd1b7 
+accept-language: en-GB, en;q=0.5 
+accept-encoding: gzip, deflate, br 
+x-forwarded-host: eu-gb.functions.appdomain.cloud 
+x-forwarded-port: 443 
+x-forwarded-for: 141.101.107.42 
+x-scheme: https 
+accept: text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0 
+host: eu-gb.functions.appdomain.cloud 
+x-forwarded-proto: https 
+x-real-ip: 141.101.107.42 
+content-length: 10 
+upgrade-insecure-requests: 1 
+x-forwarded-scheme: https
+
+0123456789

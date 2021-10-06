@@ -8,17 +8,16 @@
 # container registry.
 #
 #########################################################################
-#FROM tdolby/experimental:ace-minimal-12.0.1.0-alpine
-FROM us.icr.io/ace-registry/ace-minimal:12.0.1.0-alpine
+FROM tdolby/experimental:ace-minimal-12.0.2.0-alpine
+#FROM us.icr.io/ace-registry/ace-minimal:12.0.1.0-alpine
 
 #
 # Instructions for buiding and creating the cloud function:
 # 
-# docker build -t tdolby/experimental:ace12-cloud-function -f Dockerfile .
-# docker push tdolby/experimental:ace12-cloud-function
-# cd app
+# docker build -t tdolby/experimental:ace12.0.2-cloud-function -f Dockerfile .
+# docker push tdolby/experimental:ace12.0.2-cloud-function
 # ibmcloud target -o tdolby@uk.ibm.com -s dev
-# ibmcloud fn action create --web yes get-http-resource/ace-cloud-function --docker tdolby/experimental:ace12-cloud-function python-code.py
+# ibmcloud fn action create --web yes get-http-resource/ace-cloud-function --docker tdolby/experimental:ace12.0.2-cloud-function
 #
 MAINTAINER Trevor Dolby <tdolby@uk.ibm.com> (@tdolby)
 

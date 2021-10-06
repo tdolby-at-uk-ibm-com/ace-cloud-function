@@ -27,10 +27,10 @@ and can then be used to serve the images for the ACE function.
 To use the ACE function, with appropriate substitutions of usernames for IBM Cloud and 
 DockerHub registry, run the following after cloning this repo:
 ```
-docker build -t tdolby/experimental:ace-cloud-function -f Dockerfile .
-docker push tdolby/experimental:ace-cloud-function
+docker build -t tdolby/experimental:ace12.0.2-cloud-function -f Dockerfile .
+docker push tdolby/experimental:ace12.0.2-cloud-function
 ibmcloud target -o tdolby@uk.ibm.com -s dev
-ibmcloud fn action create --web yes get-http-resource/ace-cloud-function --docker tdolby/experimental:ace-cloud-function
+ibmcloud fn action create --web yes get-http-resource/ace-cloud-function --docker tdolby/experimental:ace12.0.2-cloud-function
 ```
 
 After this, it should be possible to run the function from the Cloud Functions web
