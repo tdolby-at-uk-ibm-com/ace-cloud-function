@@ -13,10 +13,9 @@ HTTP method or URL:
 
 and the main focus is very much on how to get ACE flows to run in Cloud Functions.
 
-The Docker image used to run this flow is built on top of the existing Python 3.7
-cloud functions image because it was the easiest way to get something running as
-quickly as possible, and as a result the image is much lrager than it would be if
-it merely contained ACE itself.
+The Docker image used to run this flow is built on ace-minimal in order to keep the
+image size down; see https://github.com/tdolby-at-uk-ibm-com/ace-docker/tree/master/experimental/ace-minimal
+for the underlying docker files.
 
 Familiarity with IBM Cloud Functions is assumed, as is an IBM Cloud ID. It appears
 difficult to persuade Cloud Functions to pull images from a registry that requires
@@ -30,9 +29,8 @@ DockerHub registry, run the following after cloning this repo:
 ```
 docker build -t tdolby/experimental:ace-cloud-function -f Dockerfile .
 docker push tdolby/experimental:ace-cloud-function
-cd app
 ibmcloud target -o tdolby@uk.ibm.com -s dev
-ibmcloud fn action create --web yes get-http-resource/ace-cloud-function --docker tdolby/experimental:ace-cloud-function python-code.py
+ibmcloud fn action create --web yes get-http-resource/ace-cloud-function --docker tdolby/experimental:ace-cloud-function
 ```
 
 After this, it should be possible to run the function from the Cloud Functions web
